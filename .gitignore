@@ -1,0 +1,62 @@
+# Folder to ignore
+temp/
+
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.fseventsd
+.DocumentRevisions-V100
+
+# Python bytecode, caches, and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+env/
+venv/
+ENV/
+.venv/
+.ENV/
+venv.bak/
+
+# Packaging / distribution
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.egg
+*.whl
+MANIFEST
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Type checkers / caches
+.mypy_cache/
+.pyre/
+
+# Jupyter notebooks
+.ipynb_checkpoints
+
+# Local environment config / secrets
+.env
+.env.* 
+local_settings.py
+instance/
+
+# Misc
+*.log
+*.sqlite3
