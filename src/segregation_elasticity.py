@@ -63,3 +63,21 @@ def compute_es_by_grid(user_data, groupby_col='home_grd_id', q_k_col='qk', soc_i
         results.append(result)
     
     return pd.DataFrame(results)
+
+
+def cut_city_to_E(series):
+    s = pd.to_numeric(series, errors='coerce').replace([np.inf, -np.inf], np.nan)
+    if s.notna().sum() < 4:
+        return pd.Series([pd.NA] * len(s), index=s.index)
+    return pd.qcut(
+        s,
+        q=4,
+        labels=['E1','E2','E3','E4'],
+    )
+
+
+def create_bivariate_class(row):
+    """Create a bivariate classification like "Q1_E1", "Q2_E3", etc."""
+    income_q = row['inc_quar']
+    elasticity_q = row['es_quar']
+    return f"{income_q}_{elasticity_q}"

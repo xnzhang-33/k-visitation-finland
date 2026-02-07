@@ -1,0 +1,65 @@
+amenity,mean_kfreq_dist,mean_closest_visit_dist,original_class,category,n_places,dist_diff
+airport,7698.194788,7698.194788,Airport,Transport,30,10
+amusement,2122.957629,1267.330165,Amusement,Culture,10814,865.6274637
+appliances_store,1704.876716,974.2101166,Appliances Store,Retail,10201,740.666599
+auto_service,214.2289669,41.93998261,Auto Service,Service,31865,182.2889842
+auto_home_supply,1663.091051,916.0061592,Auto/Home Supply,Retail,8427,757.0848923
+bakery,2156.642177,1422.954424,Bakery,Groceries,8440,743.6877537
+barber,1472.001297,638.1518692,Barber,Service,14741,843.8494275
+beauty_salon,46.51276419,37.80822086,Beauty Salon,Service,38357,18.70454333
+book_store,2916.076061,1742.370566,Book Store,Retail,9936,1183.705494
+bus_stop,228.9634096,41.96783128,Bus Stop,Transport,30510,196.9955784
+cafe,1379.346305,448.6412961,Cafe,Dining,18655,940.7050086
+car_dealer,1060.289284,376.9957987,Car Dealer,Retail,15196,693.2934858
+car_rental,1553.701042,650.4128903,Car Rental,Retail,12819,913.2881521
+car_wash,2188.607247,1242.209632,Car Wash,Service,9212,956.3976147
+casino,3847.792402,3206.10738,Casino,Retail,3822,651.6850215
+cinema,2387.832811,1349.290852,Cinema,Culture,10419,1048.541959
+clinic,1133.080581,429.2130523,Clinic,Healthcare,17932,713.8675288
+clothing___accessories,857.0917697,212.9707029,Clothing & Accessories,Retail,21572,654.1210669
+concert_hall,3399.396834,2408.615502,Concert Hall,Culture,3830,1000.781332
+convention_center,2803.562989,2110.675636,Convention Center,Civic & Religion,6544,702.8873525
+cultural_center,2543.046248,1498.894054,Cultural Center,Culture,9462,1054.152194
+daycare,147.3329838,41.1658008,Daycare,Education,30621,116.167183
+dentist,766.2134487,217.6885529,Dentist,Healthcare,20891,558.5248958
+electrical_repair,811.0073322,245.4293419,Electrical Repair,Service,18576,575.5779903
+employment_services,1219.716875,390.15348,Employment Services,Service,18009,839.5633954
+fitness_center,422.5533193,66.95607516,Fitness Center,Fitness,29230,365.5972441
+florist,1467.240879,632.744118,Florist,Retail,14931,844.4967615
+furniture,1716.918832,710.6448855,Furniture,Retail,15819,1016.273946
+gas_station,1380.362322,647.0035539,Gas Station,Service,13114,743.3587684
+gift_shop,1680.441646,1010.87171,Gift Shop,Retail,8521,679.5699355
+grocery,491.1300297,93.62526201,Grocery,Groceries,27984,407.5047677
+home_decor,2980.986178,1950.547431,Home Decor,Retail,7796,1040.438746
+home_services,676.6403874,269.0729647,Home Services,Service,10306,417.5674226
+hospital,1276.782921,480.0702136,Hospital,Healthcare,17300,806.7127077
+hotel,1155.621908,401.8111078,Hotel,Service,16778,763.8108003
+jewelry_repair,3135.664683,2687.756511,Jewelry Repair,Service,2639,457.908172
+jewelry_store,1779.034228,896.0480469,Jewelry Store,Retail,12901,892.9861812
+job_training,3727.371546,3229.215208,Job Training,Education,3044,508.1563378
+legal,790.0452639,215.1110841,Legal,Service,20316,584.9341798
+library,1866.864587,979.901021,Library,Civic & Religion,11842,896.9635663
+liquor_store,2965.820602,1833.378096,Liquor Store,Retail,8923,1142.442506
+meat_fish_market,2565.635134,2026.632568,Meat/Fish Market,Groceries,3792,549.0025662
+museum,1168.143965,454.5567307,Museum,Culture,13261,723.587234
+nightlife,2902.423366,2578.972705,Nightlife,Dining,2513,333.4506615
+optician,2268.289522,1435.048294,Optician,Retail,9734,843.2412281
+other_entertainment,1208.045459,442.7347576,Other Entertainment,Retail,16456,775.3107016
+other_hospital,2956.076491,2004.869609,Other Hospital,Healthcare,8117,961.2068816
+other_retail,2475.131819,1553.958878,Other Retail,Retail,9631,931.1729407
+other_school,957.1765313,282.2137986,Other School,Education,21693,684.9627327
+parking,855.3813819,170.8986313,Parking,Transport,25424,694.4827506
+restaurant,61.66560015,38.33004743,Restaurant,Dining,39648,33.33555271
+school_elem_secd,187.2313357,42.05932563,School Elem./Secd.,Education,32331,155.17201
+shoes,2697.549627,1695.375577,Shoes,Retail,9081,1012.17405
+shopping_center,2358.429584,1416.404259,Shopping Center,Retail,10851,952.0253256
+social_services,1313.129143,514.2243037,Social Services,Service,17086,808.9048388
+specific_sports,1821.469433,1306.097855,Specific Sports,Fitness,4618,525.371578
+sports_center,2009.932843,1336.843609,Sports Center,Fitness,6623,683.0892345
+sports_equipment,890.7791604,226.4506836,Sports Equipment,Retail,21763,674.3284768
+stadium,2310.55386,1795.054243,Stadium,Civic & Religion,4088,525.4996171
+surgical_hospital,3015.577997,2354.24693,Surgical Hospital,Healthcare,4511,671.3310675
+tire_shops,1888.349245,1288.741073,Tire Shops,Service,2576,609.6081718
+toy_store,2394.120819,1675.804558,Toy Store,Retail,8447,728.316261
+train_station,4801.098006,4484.195435,Train Station,Transport,1179,326.9025713
+zoo___botanical_garden,2068.501825,1940.816949,Zoo & Botanical Garden,Culture,1499,137.6848761
