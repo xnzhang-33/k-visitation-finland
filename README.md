@@ -1,6 +1,6 @@
 ## Recurrent visitations expose the paradox of human mobility in the 15-Minute City vision
 
-This is a repository to accompany 'Recurrent visitations expose the paradox of human mobility in the 15-Minute City vision'. It complements the results presented in the paper with code to reproduce the main results used for this paper.
+This is a repository to accompany 'Recurrent visitations expose the paradox of human mobility in the 15-Minute City vision'. It complements the results presented in the paper with code to reproduce the main figures.
 
 ### Authors
 
@@ -38,7 +38,7 @@ Pre-print available [on arXiv](https://arxiv.org/abs/2509.00919).
 ## Data Access
 
 - Data availability: Due to privacy concerns, the raw mobility data cannot be shared. We have provided aggregated data for reproducibility of the study.
-- Place data under:
+- Data is placed under:
   - `data/` ...
 
 ## Structure 
