@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy.spatial import cKDTree
 
 
 REVERSE_CLASS_MAPPING = {
@@ -176,6 +177,12 @@ CLASSES_TO_REMOVE = {
     "Cemetery",
 }
 
+FIGURE_CLASSES_TO_REMOVE = CLASSES_TO_REMOVE | {
+    "Tourist Attraction",
+    "Tourist Info",
+    "Travel Agency",
+}
+
 
 def trimmed_mean(values, lower_q=0.25, upper_q=0.75):
     clean = pd.to_numeric(values, errors="coerce").dropna()
@@ -189,86 +196,236 @@ def trimmed_mean(values, lower_q=0.25, upper_q=0.75):
     return float(trimmed.mean())
 
 
+def nearest_available_distances(
+    home_points,
+    poi_points,
+    *,
+    home_col="home_gid9",
+    class_col="amenity",
+    x_col="x",
+    y_col="y",
+):
+    """Find the nearest available POI of each class for every home.
+
+    ``home_points`` and ``poi_points`` must use the same metric coordinate
+    reference system. The result is a long table with one ``d_prox`` value for
+    every home and amenity class. No observed visitation is used in this step.
+    """
+    home_required = [home_col, x_col, y_col]
+    poi_required = [class_col, x_col, y_col]
+    _require_columns(home_points, home_required, "home_points")
+    _require_columns(poi_points, poi_required, "poi_points")
+
+    homes = home_points[home_required].drop_duplicates(home_col).copy()
+    pois = poi_points[poi_required].copy()
+    for frame in (homes, pois):
+        frame[x_col] = pd.to_numeric(frame[x_col], errors="coerce")
+        frame[y_col] = pd.to_numeric(frame[y_col], errors="coerce")
+        frame.dropna(subset=[x_col, y_col], inplace=True)
+
+    if homes.empty:
+        raise ValueError("home_points contains no valid metric coordinates")
+    if pois.empty:
+        raise ValueError("poi_points contains no valid metric coordinates")
+
+    home_xy = homes[[x_col, y_col]].to_numpy(dtype=float)
+    results = []
+    for amenity, class_points in pois.dropna(subset=[class_col]).groupby(
+        class_col, sort=True
+    ):
+        distances, _ = cKDTree(
+            class_points[[x_col, y_col]].to_numpy(dtype=float)
+        ).query(home_xy, k=1)
+        results.append(
+            pd.DataFrame(
+                {
+                    home_col: homes[home_col].to_numpy(),
+                    "amenity": amenity,
+                    "d_prox": distances,
+                }
+            )
+        )
+
+    if not results:
+        raise ValueError("poi_points contains no non-missing amenity classes")
+    return pd.concat(results, ignore_index=True)
+
+
 def build_summary_df(
     places_k,
     grid_poi_classes,
+    nearest_available,
+    *,
+    class_poi_counts=None,
     max_home_dist=50_000,
+    display_offset=10.0,
 ):
+    """Build the current amenity-level distance-differential summary.
+
+    The calculation follows the Figure 5 convention:
+
+    * ``d_freq`` is first calculated per user and amenity as the
+      visit-frequency-weighted mean home distance across all ``K_freq`` places
+      containing that amenity.
+    * ``d_prox`` is the nearest available POI distance for the same user's home,
+      irrespective of whether the user visited that POI.
+    * The two user-level series are independently 25--75% trimmed and averaged.
+    * ``delta_d_rel`` reproduces the committed plotting cache: the absolute
+      aggregate differential after the 10 m display offset, divided by
+      ``d_prox``. The signed, unshifted value is retained as ``delta_d_signed``.
+
+    All inputs are in-memory tables. Callers may include home as an eligible
+    ``K_freq`` supply point before calling this function, matching the current
+    analysis convention.
     """
-    Build amenity-level distance summary from in-memory DataFrames.
-    No file/path IO is used in this function.
-    """
-    places_k = places_k.drop_duplicates(subset=["user_id", "stay_gid10"]).copy()
-    poi_class_columns = [col for col in grid_poi_classes.columns if col != "stay_gid10"]
+    place_columns = [
+        "user_id",
+        "stay_gid10",
+        "home_gid9",
+        "home_dist",
+        "visit_freq",
+        "k_freq",
+    ]
+    _require_columns(places_k, place_columns, "places_k")
+    _require_columns(grid_poi_classes, ["stay_gid10"], "grid_poi_classes")
+    _require_columns(
+        nearest_available,
+        ["home_gid9", "amenity", "d_prox"],
+        "nearest_available",
+    )
 
-    places_with_poi = places_k.merge(grid_poi_classes, on="stay_gid10", how="left")
-    places_with_poi[poi_class_columns] = places_with_poi[poi_class_columns].fillna(0)
+    class_columns = [
+        column for column in grid_poi_classes.columns if column != "stay_gid10"
+    ]
+    if not class_columns:
+        raise ValueError("grid_poi_classes contains no amenity-class columns")
 
-    kfreq_places = places_with_poi[places_with_poi["k_freq"] == 1].copy()
+    places = places_k[place_columns].drop_duplicates(
+        ["user_id", "stay_gid10"]
+    )
+    homes_per_user = places.groupby("user_id")["home_gid9"].nunique(dropna=False)
+    if homes_per_user.gt(1).any():
+        raise ValueError("Each user must map to exactly one home_gid9")
+    class_counts = grid_poi_classes[["stay_gid10", *class_columns]].copy()
+    class_counts[class_columns] = (
+        class_counts[class_columns]
+        .apply(pd.to_numeric, errors="coerce")
+        .fillna(0)
+        .clip(lower=0)
+    )
+    places = places.merge(class_counts, on="stay_gid10", how="left")
+    places[class_columns] = places[class_columns].fillna(0)
+    places["home_dist"] = pd.to_numeric(places["home_dist"], errors="coerce")
+    places["visit_freq"] = pd.to_numeric(places["visit_freq"], errors="coerce")
+    places = places[
+        places["home_dist"].notna()
+        & places["visit_freq"].gt(0)
+        & places["home_dist"].ge(0)
+    ].copy()
+    if max_home_dist is not None:
+        places = places[places["home_dist"] <= max_home_dist].copy()
 
-    user_kfreq_reference = []
-    for user_id, user_places in kfreq_places.groupby("user_id"):
-        user_places_sorted = user_places.sort_values("visit_freq", ascending=False)
-        row = {"user_id": user_id}
-        for poi_class in poi_class_columns:
-            places_with_amenity = user_places_sorted[user_places_sorted[poi_class] > 0]
-            row[f"{poi_class}_kfreq_dist"] = (
-                places_with_amenity.iloc[0]["home_dist"] if len(places_with_amenity) > 0 else np.nan
-            )
-        user_kfreq_reference.append(row)
-    kfreq_reference_df = pd.DataFrame(user_kfreq_reference)
+    proximity = nearest_available[["home_gid9", "amenity", "d_prox"]].copy()
+    proximity["d_prox"] = pd.to_numeric(proximity["d_prox"], errors="coerce")
+    proximity = proximity[
+        proximity["d_prox"].notna() & proximity["d_prox"].gt(0)
+    ].drop_duplicates(["home_gid9", "amenity"])
+    proximity_lookup = proximity.set_index(["home_gid9", "amenity"])["d_prox"]
 
-    user_nearest = []
-    for user_id, user_places in places_with_poi.groupby("user_id"):
-        row = {"user_id": user_id}
-        for poi_class in poi_class_columns:
-            places_with_amenity = user_places[user_places[poi_class] > 0]
-            row[f"{poi_class}_nearest_dist"] = (
-                places_with_amenity.loc[places_with_amenity["home_dist"].idxmin(), "home_dist"]
-                if len(places_with_amenity) > 0
-                else np.nan
-            )
-        user_nearest.append(row)
-    nearest_df = pd.DataFrame(user_nearest)
-
-    combined_distances = kfreq_reference_df.merge(nearest_df, on="user_id", how="outer")
-
+    poi_count_lookup = _normalise_class_poi_counts(
+        class_poi_counts, class_counts, class_columns
+    )
+    kfreq = places[places["k_freq"].eq(1)].copy()
     summary_rows = []
-    for amenity in poi_class_columns:
-        kfreq_col = f"{amenity}_kfreq_dist"
-        nearest_col = f"{amenity}_nearest_dist"
 
-        if kfreq_col in combined_distances.columns:
-            mean_kfreq_dist = trimmed_mean(combined_distances[kfreq_col])
-            valid_idx = combined_distances[kfreq_col].notna()
+    for amenity in class_columns:
+        supplied = kfreq[kfreq[amenity] > 0].copy()
+        if supplied.empty:
+            user_distances = pd.DataFrame(columns=["d_freq", "d_prox"])
         else:
-            mean_kfreq_dist = np.nan
-            valid_idx = pd.Series(True, index=combined_distances.index)
+            weights = supplied.groupby("user_id")["visit_freq"].sum()
+            d_freq = (
+                (supplied["home_dist"] * supplied["visit_freq"])
+                .groupby(supplied["user_id"])
+                .sum()
+                .div(weights)
+                .rename("d_freq")
+            )
+            user_homes = supplied.drop_duplicates("user_id").set_index("user_id")[
+                "home_gid9"
+            ]
+            keys = pd.MultiIndex.from_arrays(
+                [user_homes.to_numpy(), np.repeat(amenity, len(user_homes))],
+                names=["home_gid9", "amenity"],
+            )
+            d_prox = pd.Series(
+                proximity_lookup.reindex(keys).to_numpy(),
+                index=user_homes.index,
+                name="d_prox",
+            )
+            user_distances = pd.concat([d_freq, d_prox], axis=1).dropna()
 
-        mean_closest_visit_dist = (
-            trimmed_mean(combined_distances.loc[valid_idx, nearest_col])
-            if nearest_col in combined_distances.columns
+        mean_d_freq = trimmed_mean(user_distances["d_freq"])
+        mean_d_prox = trimmed_mean(user_distances["d_prox"])
+        delta_signed = mean_d_freq - mean_d_prox
+        delta_display = delta_signed + display_offset
+        delta_relative = (
+            abs(delta_display) / mean_d_prox
+            if pd.notna(mean_d_prox) and mean_d_prox > 0
             else np.nan
         )
-
-        n_places = int((places_with_poi[amenity] > 0).sum())
-
         summary_rows.append(
             {
                 "amenity": amenity,
-                "mean_kfreq_dist": mean_kfreq_dist,
-                "mean_closest_visit_dist": mean_closest_visit_dist,
-                "n_places": n_places,
+                "original_class": REVERSE_CLASS_MAPPING.get(amenity),
+                "category": CLASS_TO_CATEGORY_MAPPING.get(
+                    REVERSE_CLASS_MAPPING.get(amenity)
+                ),
+                "d_freq": mean_d_freq,
+                "d_prox": mean_d_prox,
+                "delta_d_signed": delta_signed,
+                "delta_d_display": delta_display,
+                "delta_d_rel": delta_relative,
+                "poi_count": int(poi_count_lookup.get(amenity, 0)),
+                "n_users": int(len(user_distances)),
             }
         )
 
-    summary_df = pd.DataFrame(summary_rows)
-    summary_df["dist_diff"] = summary_df["mean_kfreq_dist"] - summary_df["mean_closest_visit_dist"] + 10 # Add small constant to avoid zero values, because we use log scale in the plot
+    summary = pd.DataFrame(summary_rows)
+    summary = summary[~summary["original_class"].isin(CLASSES_TO_REMOVE)]
+    return summary.reset_index(drop=True)
 
-    # Remap class names to original and assign categories
-    summary_df["original_class"] = summary_df["amenity"].map(REVERSE_CLASS_MAPPING)
-    summary_df["category"] = summary_df["original_class"].map(CLASS_TO_CATEGORY_MAPPING)
-    summary_df = summary_df[~summary_df["original_class"].isin(CLASSES_TO_REMOVE)]
-    
 
-    return summary_df.reset_index(drop=True)
+def figure_cache_columns(summary_df):
+    """Return the privacy-safe columns committed for Figure 5 plotting."""
+    required = [
+        "amenity",
+        "original_class",
+        "category",
+        "d_prox",
+        "delta_d_rel",
+        "poi_count",
+    ]
+    _require_columns(summary_df, required, "summary_df")
+    public = summary_df[~summary_df["original_class"].isin(FIGURE_CLASSES_TO_REMOVE)]
+    return public[required].reset_index(drop=True)
+
+
+def _normalise_class_poi_counts(class_poi_counts, class_counts, class_columns):
+    if class_poi_counts is None:
+        return class_counts[class_columns].sum(axis=0)
+    if isinstance(class_poi_counts, pd.Series):
+        return pd.to_numeric(class_poi_counts, errors="coerce").fillna(0)
+    _require_columns(class_poi_counts, ["amenity", "poi_count"], "class_poi_counts")
+    return (
+        class_poi_counts.drop_duplicates("amenity")
+        .set_index("amenity")["poi_count"]
+        .pipe(pd.to_numeric, errors="coerce")
+        .fillna(0)
+    )
+
+
+def _require_columns(frame, required, frame_name):
+    missing = [column for column in required if column not in frame.columns]
+    if missing:
+        raise ValueError(f"{frame_name} is missing required columns: {missing}")

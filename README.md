@@ -1,84 +1,79 @@
-## Recurrent visitations expose the paradox of human mobility in the 15-Minute City vision
+# Recurrent visitations reveal selectivity beyond the 15-Minute City vision
 
-This is a repository to accompany 'Recurrent visitations expose the paradox of human mobility in the 15-Minute City vision'. It complements the results presented in the paper with code to reproduce the main figures.
+Repository accompanying the manuscript *Recurrent visitations reveal selectivity beyond the 15-Minute City vision*. Code and aggregated data to reproduce its main figure panels, plus self-contained demos of the K-Visitation and d-EPR framework on synthetic data. Raw mobility data and model fitting are not included.
 
-### Authors
+## Authors
 
-* Xiuning Zhang <sup>1</sup> [<img src="https://i.vimeocdn.com/portrait/4202369_60x60?sig=9bca2cf9bcca8e574a01728a2766c9402e9679900c285517717017ebcae9e227&v=1" alt="ORCID" height="16">](https://orcid.org/0009-0001-6255-4426)
-* Alexei Poliakov <sup>2</sup> [<img src="https://i.vimeocdn.com/portrait/4202369_60x60?sig=9bca2cf9bcca8e574a01728a2766c9402e9679900c285517717017ebcae9e227&v=1" alt="ORCID" height="16">](https://orcid.org/0000-0001-7428-4040)
-* Henrikki Tenkanen <sup>3</sup> [<img src="https://i.vimeocdn.com/portrait/4202369_60x60?sig=9bca2cf9bcca8e574a01728a2766c9402e9679900c285517717017ebcae9e227&v=1" alt="ORCID" height="16">](https://orcid.org/0000-0002-0918-4710)
-* Elsa Arcaute <sup>1</sup> [<img src="https://i.vimeocdn.com/portrait/4202369_60x60?sig=9bca2cf9bcca8e574a01728a2766c9402e9679900c285517717017ebcae9e227&v=1" alt="ORCID" height="16">](https://orcid.org/0000-0001-6579-3265)
+- Xiuning Zhang¹
+- Alexei Poliakov²
+- Henrikki Tenkanen³
+- Elsa Arcaute¹
 
-Affiliations:<br>
-<sup>1</sup> The Centre for Advanced Spatial Analysis, University College London, London, UK <br>
-<sup>2</sup> Locomizer Ltd, London, UK <br>
-<sup>3</sup> Department of Built Environment, Aalto University, Espoo, Finland <br>
+¹ The Centre for Advanced Spatial Analysis, University College London, London, UK<br>
+² Locomizer Ltd, London, UK<br>
+³ Department of Built Environment, Aalto University, Espoo, Finland
 
-----
-Pre-print available [on arXiv](https://arxiv.org/abs/2509.00919). 
-
-----
+Pre-print available on [arXiv](https://doi.org/10.48550/arXiv.2509.00919).
 
 ## Quickstart
 
-0. `notebooks/demo-k_visit.ipynb` → Main framework of the study
-1. `notebooks/001-qk.ipynb` → Figures 2 & 3
-2. `notebooks/002-travel_time.ipynb` → Figure 1
-3. `notebooks/003-xgboost_classifier.ipynb` → Figure 4
-4. `notebooks/004-amenity.ipynb` → Figure 5
-5. `notebooks/005-elas_seg.ipynb` → Figure 6
-6. `notebooks/demo-k_visit.ipynb` → Sample of d-EPR model
+Figure reproduction notebooks under [`notebooks/`](notebooks/) (read from `data/`, write to `output/`):
+
+- [`notebooks/01-spatial-alignment.ipynb`](notebooks/01-spatial-alignment.ipynb) — Figure 1c
+- [`notebooks/02-travel-time-divergence.ipynb`](notebooks/02-travel-time-divergence.ipynb) — Figure 2
+- [`notebooks/03-density-null-model.ipynb`](notebooks/03-density-null-model.ipynb) — Figure 3
+- [`notebooks/04-non-alignment-shap.ipynb`](notebooks/04-non-alignment-shap.ipynb) — Figure 4
+- [`notebooks/05-amenity-distance-differentials.ipynb`](notebooks/05-amenity-distance-differentials.ipynb) — Figure 5
+
+Framework demos (synthetic data):
+
+- [`notebooks/demo-k_visitation.ipynb`](notebooks/demo-k_visitation.ipynb) — K-visitation demo
+- [`notebooks/demo-depr.ipynb`](notebooks/demo-depr.ipynb) — d-EPR null-model demo
 
 ## Requirements
 
-- Python 3.10+ recommended
-- Install dependencies: `pip install -r requirements.txt`
-- Run notebooks with: `jupyter lab` (or `jupyter notebook`)
+- Python 3.10+
+- Install with `pip install -r requirements.txt`
+- Run notebooks with `jupyter lab` or via `nbconvert`
 
-## Data Access
+## Data access
 
-- Data availability: Due to privacy concerns, the raw mobility data cannot be shared. We have provided aggregated data for reproducibility of the study.
-- Data is placed under:
-  - `data/` ...
+The raw mobility data cannot be shared because of privacy restrictions. Aggregated data needed to reproduce the figures is under [`data/`](data/). [`sample_data_k_visitation.csv`](data/sample_data_k_visitation.csv) is synthetic.
 
-## Structure 
+## Structure
 
-```
-├── src/
-│   ├── k_visitation.py           # K-visitation algorithm ($K_{freq}$, $K_{dist}$ and $q_K$)
-│   ├── mobility_utils.py         # d-EPR framework for synthesised mobility
-│   ├── distance_differentials.py # Calculate distance differentials across amenity categories
-│   └── segregation_elasticity.py # Elasticity of segregation
+```text
 ├── notebooks/
-│   ├── demo-k_visit.ipynb        # Operationalised demo for K-visitation with anonymised sample data
-│   ├── demo-depr.ipynb           # Operationalised demo for d-EPR null model with randomised data
-│   ├── 001-qk.ipynb              # Alignment coefficient ($q_K$) analysis (Figs 2 & 3)
-│   ├── 002-travel_time.ipynb     # Travel time analysis (Fig 1)
-│   ├── 003-xgboost_classifier.ipynb # Non-proximate travel prediction (Fig 4)
-│   ├── 004-amenity.ipynb         # Amenity hierarchy (Fig 5)
-│   └── 005-elas_seg.ipynb        # Segregation elasticity analysis (Fig 6)
-└── data/                         
-    ├── ...                       # Data used to reproduce figures in the study
+│   ├── 01-spatial-alignment.ipynb               # Figure 1c
+│   ├── 02-travel-time-divergence.ipynb          # Figure 2
+│   ├── 03-density-null-model.ipynb              # Figure 3
+│   ├── 04-non-alignment-shap.ipynb              # Figure 4
+│   ├── 05-amenity-distance-differentials.ipynb  # Figure 5
+│   ├── demo-k_visitation.ipynb                  # K-visitation demo
+│   └── demo-depr.ipynb                          # d-EPR null-model demo
+├── src/                          # Reusable framework modules and style
+│   ├── figure_style.py
+│   ├── k_visitation.py
+│   ├── mobility_utils.py
+│   └── distance_differentials.py
+├── data/                         # Aggregated data for figure reproduction
+│   ├── sample_data_k_visitation.csv
+│   └── ...
+└── requirements.txt
 ```
-
-## Abstract
-
-In the transition towards sustainability and equity, proximity-centred planning has been adopted in cities worldwide. Exemplified by the 15-Minute City (15mC), this emerging planning paradigm assumes that proximate amenity provision translates into localised utilisation, yet evidence on actual mobility behaviour remains limited. We advance a behaviourally grounded assessment by introducing the *K-Visitation* framework, which identifies the minimal set of distinct visitations needed to cover essential amenities under two orderings: one based on observed visitation frequency ($K_{freq}$), and the other based on proximity to home ($K_{dist}$). Applying it to an 18-month, anonymised mobility data from Finland containing 720 thousand users, we directly compared local mobility potentials with recurrent destination choices, revealing a paradox of human mobility within the 15mC framework. A clear misalignment is observed between proximity and recurrent behaviour, most pronounced in urban cores–areas boast with amenities and traditionally viewed as ideal settings for local living–where residents voluntarily overshoot nearest options, while peripheral routines remain more locally constrained. The paradox further revealed asymmetric functions influences, as compared with everyday amenities, individual travels significantly further for to encounter specialised functions. Furthermore, the social consequences of localism are spatially contingent: increased reliance on local options reduces experienced segregation in central districts but can exacerbate it elsewhere. Our findings stress that proximity is therefore necessary but insufficient for achieving the proximity living ideal; implementation of the 15mC should be behaviourally informed and place-sensitive, coupling abundant local provision of routine needs with access enhancement to specialised amenities to avoid unintended equity trade-offs.
-
-----
 
 ## Citation
 
-You can cite this paper at:
-```
-@online{zhang2025recurrent,
-  title = {Recurrent Visitations Expose the Paradox of Human Mobility in the 15-{{Minute City}} Vision},
-  author = {Zhang, Xiuning and Poliakov, Alexei and Tenkanen, Henrikki and Arcaute, Elsa},
-  date = {2025-08-31},
-  eprint = {2509.00919},
-  eprinttype = {arXiv},
-  eprintclass = {physics},
-  doi = {10.48550/arXiv.2509.00919},
-  url = {http://arxiv.org/abs/2509.00919},
+Please cite the manuscript as:
+
+```bibtex
+@misc{zhang2026recurrent,
+  title   = {Recurrent Visitations Reveal Selectivity beyond the 15-Minute City Vision},
+  author  = {Zhang, Xiuning and Poliakov, Alexei and Tenkanen, Henrikki and Arcaute, Elsa},
+  year    = {2026},
+  eprint  = {2509.00919},
+  archiveprefix = {arXiv},
+  doi     = {10.48550/arXiv.2509.00919},
+  url     = {https://arxiv.org/abs/2509.00919}
 }
 ```
