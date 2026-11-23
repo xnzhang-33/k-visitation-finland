@@ -1,0 +1,15 @@
+/output/
+!/README.md
+!/requirements.txt
+/src/generate_sample_stays.py
+/local/
+!/data/aggregated/*.parquet
+!/data/sample/sample_stays.csv
+!/data/sample/sample_places.csv
+!/data/aggregated/amenity_distances.parquet
+!/data/aggregated/destinations_summary.parquet
+!/data/aggregated/non_alignment_shap_values.parquet
+**/__pycache__/
+**/.ipynb_checkpoints/
+.DS_Store
+.env
